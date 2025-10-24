@@ -72,8 +72,40 @@ class BinOpExpr implements Expression {
 
     @SuppressWarnings("incomplete-switch")
     public Value evaluate(Environment env) {
-        // YOUR CODE HERE
-        return null;
+        Value v1 = e1.evaluate(env);
+        Value v2 = e2.evaluate(env);
+
+        IntVal i1 = (IntVal) v1;
+        IntVal i2 = (IntVal) v2;
+
+        int num1 = i1.toInt();
+        int num2 = i2.toInt();
+
+        switch(op) {
+            case ADD:
+                return new IntVal(num1+num2);
+            case SUBTRACT:
+                return new IntVal(num1-num2);
+            case MULTIPLY:
+                return new IntVal(num1*num2);
+            case DIVIDE:
+                return new IntVal(num1/num2);
+            case MOD:
+                return new IntVal(num1%num2);
+            case GT:
+                return new BoolVal(num1>num2);
+            case GE:
+                return new BoolVal(num1>=num2);
+            case LT:
+                return new BoolVal(num1<num2);
+            case LE:
+                return new BoolVal(num1<=num2);
+            case EQ:
+                return new BoolVal(num1 == num2);
+
+        }
+
+
     }
 }
 
@@ -91,8 +123,16 @@ class IfExpr implements Expression {
         this.els = els;
     }
     public Value evaluate(Environment env) {
-        // YOUR CODE HERE
-        return null;
+
+        Value condValue = cond.evaluate(env);
+        BoolVal b = (BoolVal) condValue;
+
+        if (b.toBoolean()){
+            return thn.evaluate(env);
+        } else {
+            return els.evaluate(env);
+        }
+
     }
 }
 
@@ -107,8 +147,17 @@ class WhileExpr implements Expression {
         this.body = body;
     }
     public Value evaluate(Environment env) {
-        // YOUR CODE HERE
-        return null;
+        Value condValue = cond.evaluate(env);
+        BoolVal condi = (BoolVal) condValue;
+
+        while (condi.toBoolean()) {
+            body.evaluate(env);
+            condValue = cond.evaluate(env);
+            condi = (BoolVal) condValue;
+
+        }
+
+        return new NullVal();
     }
 }
 
@@ -123,8 +172,8 @@ class SeqExpr implements Expression {
         this.e2 = e2;
     }
     public Value evaluate(Environment env) {
-        // YOUR CODE HERE
-        return null;
+        e1.evaluate(env);
+        return e2.evaluate(env);
     }
 }
 
@@ -139,8 +188,12 @@ class VarDeclExpr implements Expression {
         this.exp = exp;
     }
     public Value evaluate(Environment env) {
-        // YOUR CODE HERE
-        return null;
+
+        Value v = exp.evaluate(env);
+
+        env.createVar(varName, v);
+
+        return v;
     }
 }
 
@@ -157,8 +210,9 @@ class AssignExpr implements Expression {
         this.e = e;
     }
     public Value evaluate(Environment env) {
-        // YOUR CODE HERE
-        return null;
+        Value v = e.evaluate(env);
+        env.updateVar(varName, v);
+        return v;
     }
 }
 
@@ -173,8 +227,7 @@ class FunctionDeclExpr implements Expression {
         this.body = body;
     }
     public Value evaluate(Environment env) {
-        // YOUR CODE HERE
-        return null;
+        return new ClosureVal(params, body, env);
     }
 }
 
@@ -190,6 +243,18 @@ class FunctionAppExpr implements Expression {
     }
     public Value evaluate(Environment env) {
         // YOUR CODE HERE
+
+        ClosureVal closure = (ClosureVal) f.evaluate(env);
+
+        List<Value> argValues = new ArrayList<Value>();
+        for (Expression arg: args) {
+            Value argValue = arg.evaluate(env);
+            argValues.add(argValue);
+        }
+
+        return closure.apply(argValues);
+
+
         return null;
     }
 }
